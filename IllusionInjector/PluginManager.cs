@@ -41,13 +41,14 @@ namespace IllusionInjector
             Console.WriteLine(exeName);
             _Plugins = new List<IPlugin>();
 
-            if (!Directory.Exists(pluginDirectory)) return;
+            _Plugins.AddRange(LoadPluginsFromMemory());
+            //if (!Directory.Exists(pluginDirectory)) return;
             
-            String[] files = Directory.GetFiles(pluginDirectory, "*.dll");
-            foreach (var s in files)
-            {
-                _Plugins.AddRange(LoadPluginsFromFile(Path.Combine(pluginDirectory, s), exeName));
-            }
+            //String[] files = Directory.GetFiles(pluginDirectory, "*.dll");
+            //foreach (var s in files)
+            //{
+            //    _Plugins.AddRange(LoadPluginsFromFile(Path.Combine(pluginDirectory, s), exeName));
+            //}
             
 
             // DEBUG
@@ -61,6 +62,39 @@ namespace IllusionInjector
                 Console.WriteLine(" {0}: {1}", plugin.Name, plugin.Version);
             }
             Console.WriteLine("-----------------------------");
+        }
+
+        private static IEnumerable<IPlugin> LoadPluginsFromMemory()
+        {
+            List<IPlugin> plugins = new List<IPlugin>();
+            try
+            {
+                Assembly[] asms = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in asms)
+                {
+                    foreach (Type t in assembly.GetTypes())
+                    {
+                        if (t.GetInterface("IPlugin") != null)
+                        {
+                            try
+                            {
+                                IPlugin pluginInstance = Activator.CreateInstance(t) as IPlugin;
+                                plugins.Add(pluginInstance);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("[WARN] Could not load plugin {0} in {1}! {2}", t.FullName, Path.GetFileName(file), e);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[ERROR] Could not load plugins from memory! {0}", e);
+            }
+
+            return plugins;
         }
 
         private static IEnumerable<IPlugin> LoadPluginsFromFile(string file, string exeName)
