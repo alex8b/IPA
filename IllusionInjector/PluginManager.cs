@@ -83,7 +83,7 @@ namespace IllusionInjector
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine("[WARN] Could not load plugin {0}! {2}", t.FullName, e);
+                                Console.WriteLine("[WARN] Could not load plugin {0}! {1}", t.FullName, e);
                             }
                         }
                     }
