@@ -74,7 +74,10 @@ namespace IllusionInjector
                 {
                     foreach (Type t in assembly.GetTypes())
                     {
-                        if (t.GetInterface("IPlugin") != null)
+                        if (t != typeof(CompositePlugin)
+                            && !t.IsInterface
+                            && !t.IsAbstract
+                            && t.GetInterface("IPlugin") != null)
                         {
                             try
                             {
